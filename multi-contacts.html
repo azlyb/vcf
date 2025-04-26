@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Multiple Contacts to VCF</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 500px;
+    }
+    input {
+      display: block;
+      margin-bottom: 10px;
+      padding: 8px;
+      width: 100%;
+    }
+    button {
+      padding: 10px;
+      width: 100%;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #f0f0f0;
+      padding: 8px;
+      margin-bottom: 5px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Contact List</h2>
+
+  <input type="text" id="fullName" placeholder="Full Name">
+  <input type="tel" id="phone" placeholder="Phone Number">
+  <input type="email" id="email" placeholder="Email Address">
+  <input type="text" id="street" placeholder="Street Address">
+  <input type="text" id="city" placeholder="City">
+  <input type="text" id="state" placeholder="State">
+  <input type="text" id="zip" placeholder="ZIP Code">
+  <input type="text" id="country" placeholder="Country">
+
+  <button onclick="addContact()">Add Contact</button>
+  <button onclick="downloadAllVCF()">Download VCF</button>
+
+  <h3>Contacts Added:</h3>
+  <ul id="contactList"></ul>
+
+  <script>
+    const contacts = [];
+
+    function generateVCF(contact) {
+      return `BEGIN:VCARD
+VERSION:3.0
+FN:${contact.fullName}
+TEL;TYPE=CELL:${contact.phone}
+EMAIL:${contact.email}
+ADR;TYPE=HOME:;;${contact.street};${contact.city};${contact.state};${contact.zip};${contact.country}
+END:VCARD`;
+    }
+
+    function addContact() {
+      const contact = {
+        fullName: document.getElementById("fullName").value,
+        phone: document.getElementById("phone").value,
+        email: document.getElementById("email").value,
+        street: document.getElementById("street").value,
+        city: document.getElementById("city").value,
+        state: document.getElementById("state").value,
+        zip: document.getElementById("zip").value,
+        country: document.getElementById("country").value,
+      };
+
+      if (!contact.fullName) {
+        alert("Name is required.");
+        return;
+      }
+
+      contacts.push(contact);
+      updateContactList();
+      clearForm();
+    }
+
+    function updateContactList() {
+      const list = document.getElementById("contactList");
+      list.innerHTML = "";
+      contacts.forEach((c, i) => {
+        const item = document.createElement("li");
+        item.textContent = `${i + 1}. ${c.fullName} (${c.phone})`;
+        list.appendChild(item);
+      });
+    }
+
+    function clearForm() {
+      document.getElementById("fullName").value = "";
+      document.getElementById("phone").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("street").value = "";
+      document.getElementById("city").value = "";
+      document.getElementById("state").value = "";
+      document.getElementById("zip").value = "";
+      document.getElementById("country").value = "";
+    }
+
+    function downloadAllVCF() {
+      if (contacts.length === 0) {
+        alert("No contacts to export.");
+        return;
+      }
+
+      const vcfContent = contacts.map(generateVCF).join("\n");
+      const blob = new Blob([vcfContent], { type: "text/vcard" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "contacts.vcf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script>
+
+</body>
+</html>
